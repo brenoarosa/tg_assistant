@@ -37,7 +37,7 @@ sub clearSpamIndex {
 
 # Qualquer mensagem com uma pontuacao maior que 100 sera considerada spam.
 sub isSpam {
-    if ($spamIndex >= 100) {
+    if ($spamIndex >= 600) {
         return 1;
     }
     return 0;
@@ -60,12 +60,14 @@ sub validateMaxLengh {
 }
 
 #alguns caracteres especificos sao pouco utilizados em mensagens comuns
-#dificilmente e utilizado $ ! . ; - @ % * _ { } ( ) e outros caracteres que serao considerados
+#dificilmente e utilizado $ ! ; - @ % * _ { } ( ) e outros caracteres que serao considerados
 sub validateSpecialChars {
     my ($message) = @_;
     my $count = $message =~ tr/$|!|;|-|@|%|_|)|(|*|&|"|\|]|[|{|}//;
     my $ratio = $count / length($message);
-    $spamIndex += $spamIndex / (1 - (10 * $ratio));
+    if ($ratio != 0) {
+        $spamIndex += $spamIndex / $ratio;
+    }
     print $spamIndex . "\n";
 }
 
