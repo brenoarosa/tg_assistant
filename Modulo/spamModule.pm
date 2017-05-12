@@ -8,12 +8,6 @@ use warnings;
 use POSIX;
 use Path::Class; #Esse modulo precisa ser instalado utilizado "sudo cpan Path::Class"
 
-sub validateEmoticons {
-    my ($message, $spamIndex) = @_;
-    #Precisamos integrar primeiramente o c++ com o telegram para verificar como os emoticons
-    #sao enviados no formato texto.
-}
-
 # Transfomar as quebras de linha em espacoes, o objetivo e manter toda a mensagem na mesma linha
 # coloca tudo minusculo
 sub formatMessage {
@@ -29,6 +23,7 @@ sub validateMaxLengh {
     my ($message) = @_;
     return floor(exp((length($message)*4.55)/200));
 }
+
 #alguns caracteres especificos sao pouco utilizados em mensagens comuns
 #dificilmente e utilizado $ ! ; - @ % * _ { } ( ) e outros caracteres que serao considerados
 sub validateSpecialChars {
@@ -54,5 +49,11 @@ sub validadeDictionary {
         $count += $message =~ /$word/g;
     }
     return $spamIndex ** ($count);
+}
+
+sub validateEmoticons {
+    my ($message, $spamIndex) = @_;
+    #Precisamos integrar primeiramente o c++ com o telegram para verificar como os emoticons
+    #sao enviados no formato texto.
 }
 1;

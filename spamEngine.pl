@@ -42,15 +42,4 @@ sub isSpam {
     }
     return 0;
 }
-
-
-# Foi analizado no grupo da familia que aproximadamente 95% das mensagens nos 2 ultimos meses
-# com mais de 200 caracteres sao spams, existe uma relacao do numero de caracteres de uma mensagem
-# com a probabilidade dela ser ou nao spam. Tentamos modelar da seguinte forma este evento.
-sub validateMaxLengh {
-    my ($message) = @_;
-    $spamIndex += floor(exp((length($message)*4.55)/200));
-}
-
-
 1; #Isso e horrivel mas para eu uliziar as sub rotinas eu preciso ter essa bosta no final!
