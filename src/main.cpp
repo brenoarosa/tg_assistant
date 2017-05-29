@@ -23,7 +23,7 @@ int main(int argc, char **argv, char **env) {
 
     // Read the file. If there is an error, report it and exit.
     try {
-        keys.readFile("../keys.cfg");
+        keys.readFile("keys.cfg");
     }
     catch(const FileIOException &fioex) {
         std::cerr << "I/O error while reading keys file." << std::endl;
@@ -44,11 +44,13 @@ int main(int argc, char **argv, char **env) {
         bot.getApi().sendMessage(message->chat->id, "Hi!");
     });
     bot.getEvents().onAnyMessage([&bot](Message::Ptr message) {
-        printf("User wrote %s\n", message->text.c_str());
+        cout << "Chat ID: " << message->chat->id << "\tID: " << message->messageId << endl;
+        cout << message->from->username << ":\t" << message->text << endl;
         if (StringTools::startsWith(message->text, "/start")) {
             return;
         }
-        bot.getApi().sendMessage(message->chat->id, "Your message is: " + message->text);
+        bot.getApi().sendMessage(message->chat->id, "Deleting: " + message->text);
+        bot.getApi().deleteMessage(message->chat->id, message->messageId);
     });
 
     signal(SIGINT, [](int s) {
@@ -60,7 +62,6 @@ int main(int argc, char **argv, char **env) {
 
         TgLongPoll longPoll(bot);
         while (!sigintGot) {
-            printf("Long poll started\n");
             longPoll.start();
         }
     } catch (exception& e) {
