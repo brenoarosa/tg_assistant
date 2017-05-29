@@ -17,11 +17,13 @@ static PerlInterpreter *my_perl;  /***    The Perl interpreter    ***/
 
 bool sigintGot = false;
 
+
 int main(int argc, char **argv, char **env) {
 
     Config keys;
 
     // Read the file. If there is an error, report it and exit.
+
     try {
         keys.readFile("keys.cfg");
     }
@@ -39,24 +41,36 @@ int main(int argc, char **argv, char **env) {
     std::cout << "Hello World, this is C++!" << std::endl;
     std::cout << "Telegram Token -> [" << token << "]" << std::endl;
 
+    // Bot setup
+
     Bot bot(token);
+
     bot.getEvents().onCommand("start", [&bot](Message::Ptr message) {
         bot.getApi().sendMessage(message->chat->id, "Hi!");
     });
-    bot.getEvents().onAnyMessage([&bot](Message::Ptr message) {
-        cout << "Chat ID: " << message->chat->id << "\tID: " << message->messageId << endl;
-        cout << message->from->username << ":\t" << message->text << endl;
-        if (StringTools::startsWith(message->text, "/start")) {
+
+    bot.getEvents().onUnknownCommand([&bot](Message::Ptr message) {
+        bot.getApi().sendMessage(message->chat->id, "Sorry, I don't understand your command.");
+    });
+
+    bot.getEvents().onNonCommandMessage([&bot](Message::Ptr message) {
+        bool from_group = ((message->chat->type == Chat::Type::Group) or (message->chat->type == Chat::Type::Supergroup));
+        if (!from_group) {
+            cout << "Private message from: " << message->from->username << endl;
             return;
         }
+        cout << "Chat ID: " << message->chat->id << "\tID: " << message->messageId << endl;
+        cout << message->from->username << ":\t" << message->text << endl;
         bot.getApi().sendMessage(message->chat->id, "Deleting: " + message->text);
         bot.getApi().deleteMessage(message->chat->id, message->messageId);
     });
 
+    // Main Loop
     signal(SIGINT, [](int s) {
         printf("SIGINT got");
         sigintGot = true;
     });
+
     try {
         printf("Bot username: %s\n", bot.getApi().getMe()->username.c_str());
 
