@@ -8,6 +8,11 @@ find_library(CONFIG_LIBRARY
     NAMES config++ libconfig++
 )
 
+execute_process(
+    COMMAND perl -MExtUtils::Embed -e xsinit -- -o perlxsi.c
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+)
+
 find_package(Threads REQUIRED)
 find_package(PerlLibs REQUIRED)
 find_package(OpenSSL REQUIRED)
