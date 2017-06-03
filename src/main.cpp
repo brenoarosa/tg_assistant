@@ -36,8 +36,7 @@ int get_token(const string &filepath, string &token) {
         return 2;
     }
 
-    string _token = keys.lookup("token");
-    token = _token;
+    token = (const char*) keys.lookup("token");
     return 0;
 }
 
@@ -111,12 +110,13 @@ int main(int argc, char **argv, char **env) {
     string token = "";
     int status = get_token("keys.cfg", token);
     if (status) {
-        std::cout << "Error in config file. Exitting..." << std::endl;
+        std::cout << "Error in config file. Aborting..." << std::endl;
+        std::cout << "Could no find [keys.cfg] file with token." << std::endl;
         return status;
     }
 
     std::cout << "Hello World, this is C++!" << std::endl;
-    std::cout << "Telegram Token -> [" << token << "]" << std::endl;
+    std::cout << "Telegram Token ~> [" << token << "]" << std::endl;
 
     Bot bot(token);
     setup_bot(bot);
