@@ -12,7 +12,6 @@ sub validate {
 
     my ($message) = @_;
     clearSpamIndex();
-    my $a = floor(3.2);
     $message = formatMessage($message);
     $spamIndex += validateMaxLengh($message);
     $spamIndex += validateEmoticons($message, $spamIndex);

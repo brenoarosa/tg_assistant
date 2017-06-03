@@ -45,7 +45,7 @@ build/
 # Private keys
 keys.cfg
 
-# Generated C file
-src/perlxsi.c
+# cmake Generated file
+src/perlxsi.h
 
 tg_assistant
