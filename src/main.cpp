@@ -82,7 +82,7 @@ void setup_bot(Bot &bot) {
     });
 }
 
-void setup_perl(PerlInterpreter *perl_int, const string module_path="hello.pl") {
+void setup_perl(PerlInterpreter *perl_int, const string module_path="src/spam_classifier.pl") {
     perl_construct(perl_int);
     PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
 
