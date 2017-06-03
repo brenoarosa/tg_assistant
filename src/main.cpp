@@ -9,15 +9,13 @@
 #include <EXTERN.h>
 #include <perl.h>
 
-#include "perlxsi.c"
+#include "perlxsi.h"
 
 using namespace std;
 using namespace libconfig;
 using namespace TgBot;
 
-static PerlInterpreter *perl_int;  /***    The Perl interpreter    ***/
-
-bool sigintGot = false;
+bool exit_flag = false;
 
 int get_token(const string &filepath, string &token) {
     Config keys;
@@ -38,6 +36,23 @@ int get_token(const string &filepath, string &token) {
 
     token = (const char*) keys.lookup("token");
     return 0;
+}
+
+bool is_spam_message(const string message, const string spam_func="validate") {
+    dSP;                                                                /* initialize stack pointer      */
+    ENTER;                                                              /* everything created after here */
+    SAVETMPS;                                                           /* ...is a temporary variable.   */
+    PUSHMARK(SP);                                                       /* remember the stack pointer    */
+    XPUSHs(sv_2mortal(newSVpv(message.c_str(), message.length())));     /* push the base onto the stack  */
+    PUTBACK;                                                            /* make local stack pointer global */
+    call_pv(spam_func.c_str(), G_SCALAR);                               /* call the function             */
+    SPAGAIN;                                                            /* refresh stack pointer         */
+    bool is_spam = (bool) POPi;                                         /* pop the return value from stack */
+    PUTBACK;
+    FREETMPS;                                                           /* free that return value        */
+    LEAVE;                                                              /* ...and the XPUSHed "mortal" args.*/
+    cout << "SPAM " << is_spam << endl;
+    return is_spam;
 }
 
 void setup_bot(Bot &bot) {
@@ -70,11 +85,10 @@ void setup_bot(Bot &bot) {
 }
 
 void setup_perl(PerlInterpreter *perl_int, const string module_path="hello.pl") {
-    perl_int = perl_alloc();
     perl_construct(perl_int);
     PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
 
-    char *perl_argv[] = {"", module_path.c_str()};
+    char *perl_argv[] = {strdup(""), strdup(module_path.c_str())};
     perl_parse(perl_int, xs_init, 2, perl_argv, (char **)NULL);
     perl_run(perl_int);
 }
@@ -85,26 +99,10 @@ void destroy_perl(PerlInterpreter *perl_int) {
     PERL_SYS_TERM();
 }
 
-bool is_spam_message(const string message, const string spam_func="validate") {
-    dSP;                                                                /* initialize stack pointer      */
-    ENTER;                                                              /* everything created after here */
-    SAVETMPS;                                                           /* ...is a temporary variable.   */
-    PUSHMARK(SP);                                                       /* remember the stack pointer    */
-    XPUSHs(sv_2mortal(newSVpv(message.c_str(), message.length())));     /* push the base onto the stack  */
-    PUTBACK;                                                            /* make local stack pointer global */
-    call_pv(spam_func.c_str(), G_SCALAR);                               /* call the function             */
-    SPAGAIN;                                                            /* refresh stack pointer         */
-    bool is_spam = (bool) POPi;                                         /* pop the return value from stack */
-    PUTBACK;
-    FREETMPS;                                                           /* free that return value        */
-    LEAVE;                                                              /* ...and the XPUSHed "mortal" args.*/
-    return is_spam;
-}
-
 int main(int argc, char **argv, char **env) {
 
     PERL_SYS_INIT3(&argc,&argv,&env);
-
+    PerlInterpreter *perl_int = perl_alloc();
     setup_perl(perl_int);
 
     string token = "";
@@ -115,7 +113,6 @@ int main(int argc, char **argv, char **env) {
         return status;
     }
 
-    std::cout << "Hello World, this is C++!" << std::endl;
     std::cout << "Telegram Token ~> [" << token << "]" << std::endl;
 
     Bot bot(token);
@@ -123,14 +120,14 @@ int main(int argc, char **argv, char **env) {
 
     signal(SIGINT, [](int sig) -> void {
         std::cout << "Got SIGINT exitting after finishing current poll." << std::endl;
-        sigintGot = true;
+        exit_flag = true;
     });
 
     try {
         std::cout << "Bot username: " << bot.getApi().getMe()->username << std::endl;
         TgLongPoll longPoll(bot);
         // Main Loop
-        while (!sigintGot) {
+        while (!exit_flag) {
             longPoll.start();
         }
         destroy_perl(perl_int);
