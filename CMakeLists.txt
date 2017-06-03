@@ -24,4 +24,3 @@ add_executable(tg_assistant src/main.cpp)
 target_link_libraries(tg_assistant ${CMAKE_CURRENT_SOURCE_DIR}/lib/libTgBot.a ${CONFIG_LIBRARY} ${PERL_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES})
 
 message(STATUS "Perl version: [${PERL_VERSION}]")
-message(STATUS "include_dir: [${CMAKE_CURRENT_SOURCE_DIR}]")

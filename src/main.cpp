@@ -43,7 +43,7 @@ bool is_spam_message(const string message, const string spam_func="validate") {
     ENTER;                                                              /* everything created after here */
     SAVETMPS;                                                           /* ...is a temporary variable.   */
     PUSHMARK(SP);                                                       /* remember the stack pointer    */
-    XPUSHs(sv_2mortal(newSVpv(message.c_str(), message.length())));     /* push the base onto the stack  */
+    XPUSHs(sv_2mortal(newSVpv(message.c_str(), message.length())));     /* push the message onto the stack  */
     PUTBACK;                                                            /* make local stack pointer global */
     call_pv(spam_func.c_str(), G_SCALAR);                               /* call the function             */
     SPAGAIN;                                                            /* refresh stack pointer         */
@@ -51,7 +51,6 @@ bool is_spam_message(const string message, const string spam_func="validate") {
     PUTBACK;
     FREETMPS;                                                           /* free that return value        */
     LEAVE;                                                              /* ...and the XPUSHed "mortal" args.*/
-    cout << "SPAM " << is_spam << endl;
     return is_spam;
 }
 
@@ -76,7 +75,6 @@ void setup_bot(Bot &bot) {
         cout << "[" << message->chat->title << "]" << endl;
         cout << ">> " << message->from->username << ":\t" << message->text << endl;
 
-        // Debug
         if(is_spam_message(message->text)) {
             bot.getApi().sendMessage(message->chat->id, "Deleting: " + message->text);
             bot.getApi().deleteMessage(message->chat->id, message->messageId);
@@ -101,6 +99,8 @@ void destroy_perl(PerlInterpreter *perl_int) {
 
 int main(int argc, char **argv, char **env) {
 
+    std::cout << "Starting Bot..." << std::endl;
+
     PERL_SYS_INIT3(&argc,&argv,&env);
     PerlInterpreter *perl_int = perl_alloc();
     setup_perl(perl_int);
@@ -119,21 +119,21 @@ int main(int argc, char **argv, char **env) {
     setup_bot(bot);
 
     signal(SIGINT, [](int sig) -> void {
-        std::cout << "Got SIGINT exitting after finishing current poll." << std::endl;
+        std::cout << "SIGINT! Exitting after current poll..." << std::endl;
         exit_flag = true;
     });
 
     try {
-        std::cout << "Bot username: " << bot.getApi().getMe()->username << std::endl;
+        std::cout << "Up and running as @" << bot.getApi().getMe()->username << std::endl;
         TgLongPoll longPoll(bot);
         // Main Loop
         while (!exit_flag) {
             longPoll.start();
         }
-        destroy_perl(perl_int);
     } catch (exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
     }
 
+    destroy_perl(perl_int);
     return 0;
 }
