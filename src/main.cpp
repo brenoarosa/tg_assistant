@@ -56,11 +56,11 @@ bool is_spam_message(const string message, const string spam_func="validate") {
 
 void setup_bot(Bot &bot) {
     bot.getEvents().onCommand("start", [&bot](Message::Ptr message) -> void {
-        bot.getApi().sendMessage(message->chat->id, "Bip Bop! Getting the motor running...");
+        bot.getApi().sendMessage(message->chat->id, "Inicializando o Bot anti-spam!!");
     });
 
     bot.getEvents().onUnknownCommand([&bot](Message::Ptr message) -> void {
-        bot.getApi().sendMessage(message->chat->id, "Sorry, I don't understand your command.");
+        bot.getApi().sendMessage(message->chat->id, "Desculpe, Comando desconhecido.");
     });
 
     bot.getEvents().onNonCommandMessage([&bot](Message::Ptr message) -> void {
@@ -70,13 +70,13 @@ void setup_bot(Bot &bot) {
             // ignore for now, maybe block user
             return;
         }
-
         // Log message
         cout << "[" << message->chat->title << "]" << endl;
         cout << ">> " << message->from->username << ":\t" << message->text << endl;
 
         if(is_spam_message(message->text)) {
-            bot.getApi().sendMessage(message->chat->id, "Deleting: " + message->text);
+            bot.getApi().sendMessage(message->chat->id, message->from->firstName + " " + message->from->lastName +
+                ": Sua mensagem foi categorizada como spam e removida do grupo.");
             bot.getApi().deleteMessage(message->chat->id, message->messageId);
         }
     });
