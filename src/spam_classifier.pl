@@ -2,21 +2,38 @@
 
 use strict;
 use warnings;
-use POSIX;
+use autodie;
+use Path::Class; #Esse modulo precisa ser instalado utilizado "sudo cpan Path::Class"
+use FindBin;
+use lib "$FindBin::Bin/../src";
+#use lib "/home/igor/Desktop/UFRJ/Class/Linguagem de Programacao/Trabalho/src/"; #Modificar o path para o diretorio em que o modulo se encontra
+use spamModule;
 
+my $spamIndex; #global para armazenar um indice de spam
+
+validate("teste");
+#Subrotina principal responsabel por chamar todas as outras validacoes e formatacoes
 sub validate {
 
     my ($message) = @_;
-    $message = formatMessage($message);
-    my $spam_index = rand();
-    if ($spam_index > .5) {
-        return 1;
-    }
-    return 0
+    clearSpamIndex();
+    $message = spamModule::formatMessage($message);
+    $spamIndex += spamModule::validateMaxLengh($message);
+    $spamIndex += spamModule::validadeDictionary($message, $spamIndex);
+    $spamIndex += spamModule::validateSpecialChars($message, $spamIndex);
+    return isSpam()
 }
 
-sub formatMessage {
-    my ($message) = @_;
-    $message =~ tr{\n}{ };
-    return lc $message;
+# Zera o indice que verifica se a mensagem e spam ou nao
+sub clearSpamIndex {
+    $spamIndex = 0;
 }
+
+# Qualquer mensagem com uma pontuacao maior que 30000 sera considerada spam.
+sub isSpam {
+    if ($spamIndex >= 30000) {
+        return 1;
+    }
+    return 0;
+}
+1;
