@@ -6,12 +6,10 @@ use autodie;
 use Path::Class; #Esse modulo precisa ser instalado utilizado "sudo cpan Path::Class"
 use FindBin;
 use lib "$FindBin::Bin/../src";
-#use lib "/home/igor/Desktop/UFRJ/Class/Linguagem de Programacao/Trabalho/src/"; #Modificar o path para o diretorio em que o modulo se encontra
 use spamModule;
 
 my $spamIndex; #global para armazenar um indice de spam
 
-validate("teste");
 #Subrotina principal responsabel por chamar todas as outras validacoes e formatacoes
 sub validate {
 
