@@ -49,3 +49,4 @@ keys.cfg
 src/perlxsi.h
 
 tg_assistant
+!lib/libTgBot.a
